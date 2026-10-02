@@ -104,6 +104,7 @@ function MainApp() {
           <LoginScreen
             onLoginSuccess={handleLoginSuccess}
             onBackToOnboarding={() => setCurrentFlow('onboarding')}
+            language={currentLang}
           />
         );
       case 'main':

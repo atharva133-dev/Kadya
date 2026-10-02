@@ -9,6 +9,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { getTranslation } from '../locales/translations';
 
 interface ProblemInputCardProps {
   value: string;
@@ -16,6 +17,7 @@ interface ProblemInputCardProps {
   onOpenVoice: () => void;
   onSubmitProblem: () => void;
   onOpenGeminiChat: (query?: string) => void;
+  language?: string;
 }
 
 export const ProblemInputCard: React.FC<ProblemInputCardProps> = ({
@@ -24,7 +26,9 @@ export const ProblemInputCard: React.FC<ProblemInputCardProps> = ({
   onOpenVoice,
   onSubmitProblem,
   onOpenGeminiChat,
+  language = 'EN',
 }) => {
+  const t = getTranslation(language);
   const inputRef = useRef<TextInput>(null);
 
   const handleFocusType = () => {
@@ -88,7 +92,7 @@ export const ProblemInputCard: React.FC<ProblemInputCardProps> = ({
             accessibilityLabel="Type your legal problem"
           >
             <Ionicons name="keypad-outline" size={17} color="#334155" />
-            <Text style={styles.typeButtonText}>Type</Text>
+            <Text style={styles.typeButtonText}>{t.typeBtn}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -98,7 +102,7 @@ export const ProblemInputCard: React.FC<ProblemInputCardProps> = ({
             accessibilityLabel="Speak your legal problem"
           >
             <Ionicons name="mic" size={18} color="#FFFFFF" />
-            <Text style={styles.speakButtonText}>Speak</Text>
+            <Text style={styles.speakButtonText}>{t.speakBtn}</Text>
           </TouchableOpacity>
         </View>
 
@@ -111,7 +115,7 @@ export const ProblemInputCard: React.FC<ProblemInputCardProps> = ({
               activeOpacity={0.85}
             >
               <Ionicons name="sparkles" size={16} color="#FFFFFF" />
-              <Text style={styles.geminiActionBtnText}>Ask Gemini Legal AI</Text>
+              <Text style={styles.geminiActionBtnText}>{t.askLegalAi}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -119,7 +123,7 @@ export const ProblemInputCard: React.FC<ProblemInputCardProps> = ({
               onPress={onSubmitProblem}
               activeOpacity={0.85}
             >
-              <Text style={styles.analyzeButtonText}>View 5-Pillar Action Plan</Text>
+              <Text style={styles.analyzeButtonText}>{t.view5Pillars}</Text>
               <Ionicons name="arrow-forward" size={15} color="#0F172A" />
             </TouchableOpacity>
           </View>
@@ -130,14 +134,14 @@ export const ProblemInputCard: React.FC<ProblemInputCardProps> = ({
       <View style={styles.trustBadgesRow}>
         <View style={styles.badgeItem}>
           <Ionicons name="lock-closed" size={13} color="#475569" />
-          <Text style={styles.badgeText}>Your information is private</Text>
+          <Text style={styles.badgeText}>{t.privacyBadge}</Text>
         </View>
 
         <View style={styles.badgeDivider} />
 
         <View style={styles.badgeItem}>
           <Ionicons name="information-circle-outline" size={14} color="#475569" />
-          <Text style={styles.badgeText}>Information, not legal advice</Text>
+          <Text style={styles.badgeText}>{t.infoBadge}</Text>
         </View>
       </View>
     </View>

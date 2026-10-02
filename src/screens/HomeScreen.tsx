@@ -93,7 +93,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateTab }) => {
             showsVerticalScrollIndicator={false}
           >
             {/* Main Headline & Description */}
-            <HeroSection />
+            <HeroSection language={currentLanguage} />
 
             {/* Problem Input Box Card */}
             <ProblemInputCard
@@ -102,6 +102,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateTab }) => {
               onOpenVoice={() => setVoiceModalVisible(true)}
               onSubmitProblem={() => setGuidanceModalVisible(true)}
               onOpenGeminiChat={handleLaunchGeminiChat}
+              language={currentLanguage}
             />
 
             {/* Common Legal Issues Grid */}
@@ -109,6 +110,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateTab }) => {
               categories={COMMON_LEGAL_ISSUES}
               onSelectCategory={handleSelectCategory}
               onSeeAll={() => onNavigateTab('guides')}
+              language={currentLanguage}
             />
 
             {/* Complaint Draft & Legal Aid Action Cards */}
@@ -118,6 +120,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateTab }) => {
                 setDraftModalVisible(true);
               }}
               onOpenLegalAid={() => setLegalAidModalVisible(true)}
+              language={currentLanguage}
             />
           </ScrollView>
         </>
@@ -130,6 +133,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateTab }) => {
         initialQuery={activeGeminiQuery}
         onOpenDraftWithId={handleOpenDraftWithTemplate}
         onOpenHelpline={() => setLegalAidModalVisible(true)}
+        language={currentLanguage}
       />
 
       {/* Gemini Voice Assistant Modal */}

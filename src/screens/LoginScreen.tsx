@@ -13,42 +13,107 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { JusticeScaleLogo } from '../components/JusticeScaleLogo';
-import { authService, UserProfile } from '../services/authService';
+import { authService, UserProfile, CLERK_AUTH_URLS } from '../services/authService';
+import { getTranslation } from '../locales/translations';
 
 interface LoginScreenProps {
   onLoginSuccess: (user: UserProfile) => void;
   onBackToOnboarding?: () => void;
+  language?: string;
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({
   onLoginSuccess,
   onBackToOnboarding,
+  language = 'EN',
 }) => {
   const [isSignUp, setIsSignUp] = useState<boolean>(false);
+  const [firstName, setFirstName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   const [rememberMe, setRememberMe] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(false);
+  const [googleLoading, setGoogleLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
-
   const [infoMessage, setInfoMessage] = useState<string>('');
 
+  const t = getTranslation(language);
+
+  // Derived account display name preview
+  const computedDisplayName = firstName.trim() && lastName.trim()
+    ? `${firstName.trim()} ${lastName.trim()}`
+    : firstName.trim() || (email ? email.split('@')[0] : 'Citizen');
+
+  // Direct Google Sign In with Clerk OAuth
+  const handleGoogleSignIn = async () => {
+    if (loading || googleLoading) return;
+    setGoogleLoading(true);
+    setErrorMessage('');
+    setInfoMessage('Signing in via Clerk Google OAuth (/auth-redirect)...');
+
+    try {
+      const user = await authService.signInWithGoogle();
+      onLoginSuccess(user);
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : 'Google authentication failed. Please try again.');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   const handleSignIn = async () => {
-    if (loading) return;
+    if (loading || googleLoading) return;
     setLoading(true);
     setErrorMessage('');
     setInfoMessage('');
+
     try {
       let user: UserProfile;
       if (isSignUp) {
+        if (!firstName.trim()) {
+          setErrorMessage('Please enter your First Name to name your account.');
+          setLoading(false);
+          return;
+        }
+        if (!email.trim() || !email.includes('@')) {
+          setErrorMessage('Please enter a valid email address.');
+          setLoading(false);
+          return;
+        }
+        if (password.length < 6) {
+          setErrorMessage('Password must be at least 6 characters long.');
+          setLoading(false);
+          return;
+        }
+        if (password !== confirmPassword) {
+          setErrorMessage('Passwords do not match. Please verify your confirm password.');
+          setLoading(false);
+          return;
+        }
+
         user = await authService.signUpWithEmail(
           email,
           password,
-          undefined,
+          firstName.trim(),
+          lastName.trim(),
           rememberMe
         );
       } else {
+        if (!email.trim()) {
+          setErrorMessage('Please enter your email address.');
+          setLoading(false);
+          return;
+        }
+        if (!password) {
+          setErrorMessage('Please enter your password.');
+          setLoading(false);
+          return;
+        }
+
         user = await authService.signInWithEmail(
           email,
           password,
@@ -82,7 +147,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   };
 
   const handleGuestContinue = async () => {
-    if (loading) return;
+    if (loading || googleLoading) return;
     setLoading(true);
     setErrorMessage('');
     setInfoMessage('');
@@ -126,7 +191,50 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             <Text style={styles.brandKayda}>Kayda </Text>
             <Text style={styles.brandSathi}>Sathi</Text>
           </View>
-          <Text style={styles.brandTagline}>Your Rights. Your Next Steps.</Text>
+          <Text style={styles.brandTagline}>{t.appTagline}</Text>
+        </View>
+
+        {/* Segmented Tab Switcher: Sign In vs Sign Up */}
+        <View style={styles.tabsWrapper}>
+          <View style={styles.segmentContainer}>
+            <TouchableOpacity
+              style={[styles.segmentBtn, !isSignUp && styles.segmentBtnActive]}
+              onPress={() => {
+                setIsSignUp(false);
+                setErrorMessage('');
+                setInfoMessage('');
+              }}
+              activeOpacity={0.8}
+            >
+              <Ionicons
+                name="log-in-outline"
+                size={16}
+                color={!isSignUp ? '#FFFFFF' : '#64748B'}
+              />
+              <Text style={[styles.segmentText, !isSignUp && styles.segmentTextActive]}>
+                Sign In
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.segmentBtn, isSignUp && styles.segmentBtnActive]}
+              onPress={() => {
+                setIsSignUp(true);
+                setErrorMessage('');
+                setInfoMessage('');
+              }}
+              activeOpacity={0.8}
+            >
+              <Ionicons
+                name="person-add-outline"
+                size={16}
+                color={isSignUp ? '#FFFFFF' : '#64748B'}
+              />
+              <Text style={[styles.segmentText, isSignUp && styles.segmentTextActive]}>
+                Sign Up
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Headline */}
@@ -136,8 +244,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           </Text>
           <Text style={styles.subTitle}>
             {isSignUp
-              ? 'Join Kayda Sathi to get personalized legal guidance.'
-              : 'Sign in to continue your legal journey with Kayda Sathi.'}
+              ? 'Join Kayda Sathi with Clerk authentication to access personalized legal guidance.'
+              : 'Sign in with your Clerk account to continue your legal journey.'}
           </Text>
         </View>
 
@@ -157,11 +265,93 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           </View>
         )}
 
-        {/* Form Inputs */}
+        {/* Form Inputs Container */}
         <View style={styles.formContainer}>
+          {/* Direct Google Login with Clerk */}
+          <TouchableOpacity
+            style={styles.googleBtn}
+            onPress={handleGoogleSignIn}
+            disabled={loading || googleLoading}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel={isSignUp ? 'Sign up with Google via Clerk' : 'Continue with Google via Clerk'}
+          >
+            {googleLoading ? (
+              <ActivityIndicator color="#0F172A" size="small" />
+            ) : (
+              <>
+                <View style={styles.googleIconContainer}>
+                  <Ionicons name="logo-google" size={19} color="#EA4335" />
+                </View>
+                <Text style={styles.googleBtnText}>
+                  {isSignUp ? 'Sign up with Google' : 'Continue with Google'}
+                </Text>
+                <View style={styles.clerkMiniTag}>
+                  <Text style={styles.clerkMiniTagText}>Clerk OAuth</Text>
+                </View>
+              </>
+            )}
+          </TouchableOpacity>
+
+          {/* Divider */}
+          <View style={styles.dividerRow}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or continue with email</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          {/* First Name & Last Name (Sign Up only) */}
+          {isSignUp && (
+            <>
+              <View style={styles.nameRow}>
+                <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
+                  <Text style={styles.inputLabel}>First Name *</Text>
+                  <View style={styles.inputBox}>
+                    <Ionicons name="person-outline" size={17} color="#64748B" style={styles.inputIcon} />
+                    <TextInput
+                      style={styles.textInput}
+                      placeholder="e.g. Rahul"
+                      placeholderTextColor="#94A3B8"
+                      autoCapitalize="words"
+                      editable={!loading && !googleLoading}
+                      value={firstName}
+                      onChangeText={setFirstName}
+                    />
+                  </View>
+                </View>
+
+                <View style={[styles.inputGroup, { flex: 1 }]}>
+                  <Text style={styles.inputLabel}>Last Name</Text>
+                  <View style={styles.inputBox}>
+                    <Ionicons name="person-outline" size={17} color="#64748B" style={styles.inputIcon} />
+                    <TextInput
+                      style={styles.textInput}
+                      placeholder="e.g. Sharma"
+                      placeholderTextColor="#94A3B8"
+                      autoCapitalize="words"
+                      editable={!loading && !googleLoading}
+                      value={lastName}
+                      onChangeText={setLastName}
+                    />
+                  </View>
+                </View>
+              </View>
+
+              {/* Dynamic Account Name Preview Badge */}
+              {firstName.trim().length > 0 && (
+                <View style={styles.accountPreviewBox}>
+                  <Ionicons name="person-circle-outline" size={16} color="#DE6027" />
+                  <Text style={styles.accountPreviewText}>
+                    Account Name: <Text style={styles.accountPreviewBold}>{computedDisplayName}</Text>
+                  </Text>
+                </View>
+              )}
+            </>
+          )}
+
           {/* Email */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Email</Text>
+            <Text style={styles.inputLabel}>Email Address *</Text>
             <View style={styles.inputBox}>
               <Ionicons name="mail-outline" size={18} color="#64748B" style={styles.inputIcon} />
               <TextInput
@@ -170,7 +360,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 placeholderTextColor="#94A3B8"
                 keyboardType="email-address"
                 autoCapitalize="none"
-                editable={!loading}
+                editable={!loading && !googleLoading}
                 autoCorrect={false}
                 accessibilityLabel="Email"
                 autoComplete="email"
@@ -182,15 +372,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
           {/* Password */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Password</Text>
+            <Text style={styles.inputLabel}>Password *</Text>
             <View style={styles.inputBox}>
               <Ionicons name="lock-closed-outline" size={18} color="#64748B" style={styles.inputIcon} />
               <TextInput
                 style={styles.textInput}
-                placeholder="Enter your password"
+                placeholder="Enter your password (min 6 characters)"
                 placeholderTextColor="#94A3B8"
                 secureTextEntry={!showPassword}
-                editable={!loading}
+                editable={!loading && !googleLoading}
                 autoCapitalize="none"
                 autoCorrect={false}
                 accessibilityLabel="Password"
@@ -211,11 +401,44 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             </View>
           </View>
 
+          {/* Confirm Password (Sign Up only) */}
+          {isSignUp && (
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Confirm Password *</Text>
+              <View style={styles.inputBox}>
+                <Ionicons name="lock-closed-outline" size={18} color="#64748B" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Re-enter your password"
+                  placeholderTextColor="#94A3B8"
+                  secureTextEntry={!showConfirmPassword}
+                  editable={!loading && !googleLoading}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  accessibilityLabel="Confirm Password"
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  style={styles.eyeBtn}
+                >
+                  <Ionicons
+                    name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={18}
+                    color="#64748B"
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
           {/* Remember Me & Forgot Password Row */}
           <View style={styles.rememberRow}>
             <TouchableOpacity
               style={styles.rememberLeft}
-              disabled={loading}
+              disabled={loading || googleLoading}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: rememberMe }}
               onPress={() => setRememberMe(!rememberMe)}
@@ -227,44 +450,62 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               <Text style={styles.rememberText}>Remember me</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={handleForgotPassword} disabled={loading} activeOpacity={0.7}>
-              <Text style={styles.forgotPasswordText}>Forgot password?</Text>
-            </TouchableOpacity>
+            {!isSignUp && (
+              <TouchableOpacity
+                onPress={handleForgotPassword}
+                disabled={loading || googleLoading}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
-          {/* Sign In Button */}
+          {/* Sign In / Sign Up Submit Button */}
           <TouchableOpacity
             style={styles.signInBtn}
             onPress={handleSignIn}
-            disabled={loading}
+            disabled={loading || googleLoading}
             activeOpacity={0.88}
             accessibilityRole="button"
-            accessibilityLabel={isSignUp ? 'Sign Up' : 'Sign In'}
+            accessibilityLabel={isSignUp ? 'Create Clerk Account' : 'Sign In with Clerk'}
           >
             {loading ? (
               <ActivityIndicator color="#FFFFFF" size="small" />
             ) : (
               <>
-                <Text style={styles.signInBtnText}>{isSignUp ? 'Sign Up' : 'Sign In'}</Text>
+                <Text style={styles.signInBtnText}>
+                  {isSignUp ? 'Create Clerk Account' : 'Sign In with Clerk'}
+                </Text>
                 <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
               </>
             )}
           </TouchableOpacity>
 
-          {/* Sign Up / Sign In Toggle */}
+          {/* Sign Up / Sign In Toggle Footer */}
           <View style={styles.toggleRow}>
             <Text style={styles.toggleLabel}>
               {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
             </Text>
-            <TouchableOpacity disabled={loading} onPress={() => { setIsSignUp(!isSignUp); setErrorMessage(''); setInfoMessage(''); }} activeOpacity={0.7}>
-              <Text style={styles.toggleLink}>{isSignUp ? 'Sign In' : 'Sign Up'}</Text>
+            <TouchableOpacity
+              disabled={loading || googleLoading}
+              onPress={() => {
+                setIsSignUp(!isSignUp);
+                setErrorMessage('');
+                setInfoMessage('');
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.toggleLink}>
+                {isSignUp ? 'Sign In' : 'Sign Up'}
+              </Text>
             </TouchableOpacity>
           </View>
 
           {/* Continue as Guest option */}
           <TouchableOpacity
             style={styles.guestLink}
-            disabled={loading}
+            disabled={loading || googleLoading}
             accessibilityRole="button"
             onPress={handleGuestContinue}
             activeOpacity={0.7}
@@ -272,16 +513,42 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             <Text style={styles.guestLinkText}>Explore app as Guest Citizen &rarr;</Text>
           </TouchableOpacity>
 
-          {/* Trust Badge */}
-          <View style={styles.trustBadge}>
-            <Ionicons name="shield-checkmark" size={18} color="#64748B" />
-            <Text style={styles.trustBadgeText}>
-              Your account is protected with Clerk Authentication.
+          {/* Clerk Architecture & Post-Auth DB Sync Card */}
+          <View style={styles.clerkSyncCard}>
+            <View style={styles.clerkSyncTopRow}>
+              <View style={styles.clerkBadgePill}>
+                <Ionicons name="lock-closed" size={12} color="#059669" />
+                <Text style={styles.clerkBadgePillText}>Clerk Authentication</Text>
+              </View>
+              <Text style={styles.clerkSyncSubtext}>DB Sync Enabled</Text>
+            </View>
+
+            <Text style={styles.clerkFlowDescription}>
+              All post-auth flows securely redirect to <Text style={styles.codeText}>{CLERK_AUTH_URLS.afterSignInUrl}</Text> for database user synchronization.
             </Text>
+
+            <View style={styles.clerkEndpointsRow}>
+              <View style={styles.endpointChip}>
+                <Text style={styles.endpointLabel}>Sign In:</Text>
+                <Text style={styles.endpointValue}>{CLERK_AUTH_URLS.signInUrl}</Text>
+              </View>
+              <View style={styles.endpointChip}>
+                <Text style={styles.endpointLabel}>Sign Up:</Text>
+                <Text style={styles.endpointValue}>{CLERK_AUTH_URLS.signUpUrl}</Text>
+              </View>
+              <View style={styles.endpointChip}>
+                <Text style={styles.endpointLabel}>Google OAuth:</Text>
+                <Text style={styles.endpointValue}>oauth_google</Text>
+              </View>
+              <View style={styles.endpointChip}>
+                <Text style={styles.endpointLabel}>DB Sync:</Text>
+                <Text style={styles.endpointValue}>{CLERK_AUTH_URLS.afterSignUpUrl}</Text>
+              </View>
+            </View>
           </View>
         </View>
 
-        {/* Bottom Architectural High Court Illustration */}
+        {/* Bottom High Court Illustration */}
         <View style={styles.courtIllustrationContainer}>
           <Image
             source={require('../../assets/images/court_footer.jpg')}
@@ -328,7 +595,7 @@ const styles = StyleSheet.create({
   headerBlock: {
     alignItems: 'center',
     marginTop: 8,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   brandTitleRow: {
     flexDirection: 'row',
@@ -353,23 +620,68 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginTop: 2,
   },
+  tabsWrapper: {
+    paddingHorizontal: 24,
+    marginBottom: 16,
+  },
+  segmentContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#E2E8F0',
+    borderRadius: 12,
+    padding: 3,
+  },
+  segmentBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 9,
+    borderRadius: 9,
+  },
+  segmentBtnActive: {
+    backgroundColor: '#DE6027',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.12,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0 2px 6px rgba(222, 96, 39, 0.35)',
+      },
+    }),
+  },
+  segmentText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  segmentTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
   titleSection: {
     alignItems: 'center',
     paddingHorizontal: 28,
-    marginBottom: 20,
+    marginBottom: 16,
   },
   mainTitle: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: '800',
     color: '#0F172A',
     letterSpacing: -0.5,
   },
   subTitle: {
-    fontSize: 13.5,
+    fontSize: 13,
     color: '#64748B',
     textAlign: 'center',
     marginTop: 6,
-    lineHeight: 19,
+    lineHeight: 18,
   },
   errorBox: {
     flexDirection: 'row',
@@ -408,6 +720,100 @@ const styles = StyleSheet.create({
   formContainer: {
     paddingHorizontal: 24,
   },
+  googleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    height: 48,
+    marginBottom: 16,
+    paddingHorizontal: 14,
+    gap: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+        cursor: 'pointer',
+      } as any,
+    }),
+  },
+  googleIconContainer: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#FFF5F5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  googleBtnText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1E293B',
+  },
+  clerkMiniTag: {
+    backgroundColor: '#F1F5F9',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginLeft: 'auto',
+  },
+  clerkMiniTagText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#64748B',
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 18,
+    marginTop: 2,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E2E8F0',
+  },
+  dividerText: {
+    fontSize: 12,
+    color: '#94A3B8',
+    fontWeight: '500',
+    paddingHorizontal: 10,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  accountPreviewBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#FFF7ED',
+    borderWidth: 1,
+    borderColor: '#FED7AA',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginBottom: 12,
+  },
+  accountPreviewText: {
+    fontSize: 11.5,
+    color: '#C2410C',
+  },
+  accountPreviewBold: {
+    fontWeight: '700',
+    color: '#9A3412',
+  },
   inputGroup: {
     marginBottom: 14,
   },
@@ -421,7 +827,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     paddingHorizontal: 12,
@@ -495,7 +901,7 @@ const styles = StyleSheet.create({
   },
   signInBtn: {
     backgroundColor: '#DE6027',
-    borderRadius: 26,
+    borderRadius: 24,
     height: 50,
     flexDirection: 'row',
     alignItems: 'center',
@@ -546,23 +952,92 @@ const styles = StyleSheet.create({
     color: '#64748B',
     fontWeight: '600',
   },
-  trustBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 12,
+  clerkSyncCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    padding: 10,
+    padding: 12,
     marginTop: 16,
     marginBottom: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 1,
+      },
+      web: {
+        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.03)',
+      },
+    }),
   },
-  trustBadgeText: {
-    flex: 1,
+  clerkSyncTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  clerkBadgePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  clerkBadgePillText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#059669',
+  },
+  clerkSyncSubtext: {
+    fontSize: 10.5,
+    fontWeight: '600',
+    color: '#059669',
+  },
+  clerkFlowDescription: {
     fontSize: 11,
     color: '#475569',
-    lineHeight: 15,
+    lineHeight: 16,
+    marginBottom: 8,
+  },
+  codeText: {
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+    fontWeight: '700',
+    color: '#DE6027',
+    backgroundColor: '#F1F5F9',
+  },
+  clerkEndpointsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  endpointChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    gap: 4,
+  },
+  endpointLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  endpointValue: {
+    fontSize: 10,
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+    fontWeight: '700',
+    color: '#0F172A',
   },
   courtIllustrationContainer: {
     width: '100%',

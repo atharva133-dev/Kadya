@@ -1,16 +1,21 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { getTranslation } from '../locales/translations';
 
 interface ActionCardsProps {
   onOpenDrafts: () => void;
   onOpenLegalAid: () => void;
+  language?: string;
 }
 
 export const ActionCards: React.FC<ActionCardsProps> = ({
   onOpenDrafts,
   onOpenLegalAid,
+  language = 'EN',
 }) => {
+  const t = getTranslation(language);
+
   return (
     <View style={styles.container}>
       {/* Draft Card */}
@@ -18,7 +23,7 @@ export const ActionCards: React.FC<ActionCardsProps> = ({
         style={[styles.actionCard, styles.draftCard]}
         onPress={onOpenDrafts}
         activeOpacity={0.8}
-        accessibilityLabel="Need a complaint or request draft?"
+        accessibilityLabel={t.draftsTitle}
       >
         <View style={styles.draftIconBox}>
           <MaterialCommunityIcons
@@ -29,10 +34,8 @@ export const ActionCards: React.FC<ActionCardsProps> = ({
         </View>
 
         <View style={styles.contentCol}>
-          <Text style={styles.cardTitle}>Need a complaint or request draft?</Text>
-          <Text style={styles.cardSubtitle}>
-            Create a personalized draft in minutes.
-          </Text>
+          <Text style={styles.cardTitle}>{t.draftsTitle}</Text>
+          <Text style={styles.cardSubtitle}>{t.draftsSubtitle}</Text>
         </View>
 
         <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
@@ -43,17 +46,15 @@ export const ActionCards: React.FC<ActionCardsProps> = ({
         style={[styles.actionCard, styles.legalAidCard]}
         onPress={onOpenLegalAid}
         activeOpacity={0.8}
-        accessibilityLabel="Find Legal Aid and Support"
+        accessibilityLabel={t.helplineTitle}
       >
         <View style={styles.supportIconBox}>
           <Ionicons name="headset" size={22} color="#0F172A" />
         </View>
 
         <View style={styles.contentCol}>
-          <Text style={styles.cardTitle}>Find Legal Aid & Support</Text>
-          <Text style={styles.cardSubtitle}>
-            Locate authorities, legal-aid centers and helplines near you.
-          </Text>
+          <Text style={styles.cardTitle}>{t.helplineTitle}</Text>
+          <Text style={styles.cardSubtitle}>{t.helplineSubtitle}</Text>
         </View>
 
         <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
@@ -65,36 +66,26 @@ export const ActionCards: React.FC<ActionCardsProps> = ({
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
-    marginTop: 14,
-    marginBottom: 20,
+    marginTop: 20,
+    marginBottom: 28,
     gap: 12,
   },
   actionCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    padding: 14,
     borderRadius: 18,
     borderWidth: 1,
-    padding: 14,
-    gap: 12,
     ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.03,
-        shadowRadius: 3,
-      },
-      android: {
-        elevation: 1,
-      },
       web: {
-        boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
-        outlineStyle: 'none',
+        cursor: 'pointer',
+        transition: 'all 0.15s ease',
       } as any,
     }),
   },
   draftCard: {
-    backgroundColor: '#FFF5EB',
-    borderColor: '#FED7AA',
+    backgroundColor: '#FFF7ED',
+    borderColor: '#FFEDD5',
   },
   legalAidCard: {
     backgroundColor: '#F8FAFC',
@@ -104,17 +95,19 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#FEE8D6',
+    backgroundColor: '#FFEDD5',
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 14,
   },
   supportIconBox: {
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#EDF2F7',
+    backgroundColor: '#E2E8F0',
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 14,
   },
   contentCol: {
     flex: 1,
@@ -123,12 +116,11 @@ const styles = StyleSheet.create({
     fontSize: 14.5,
     fontWeight: '700',
     color: '#0F172A',
-    letterSpacing: -0.2,
+    marginBottom: 2,
   },
   cardSubtitle: {
     fontSize: 12,
     color: '#64748B',
-    marginTop: 2,
     lineHeight: 16,
   },
 });

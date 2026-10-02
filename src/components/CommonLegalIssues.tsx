@@ -2,18 +2,22 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LegalCategory } from '../types';
+import { getTranslation } from '../locales/translations';
 
 interface CommonLegalIssuesProps {
   categories: LegalCategory[];
   onSelectCategory: (category: LegalCategory) => void;
   onSeeAll: () => void;
+  language?: string;
 }
 
 export const CommonLegalIssues: React.FC<CommonLegalIssuesProps> = ({
   categories,
   onSelectCategory,
   onSeeAll,
+  language = 'EN',
 }) => {
+  const t = getTranslation(language);
   // Render icon helper
   const renderCategoryIcon = (category: LegalCategory) => {
     if (category.iconFamily === 'MaterialCommunityIcons') {
@@ -34,17 +38,27 @@ export const CommonLegalIssues: React.FC<CommonLegalIssuesProps> = ({
     );
   };
 
+  const getCategoryTitle = (item: LegalCategory) => {
+    if (item.id === 'housing') return t.housing;
+    if (item.id === 'employment') return t.employment;
+    if (item.id === 'consumer') return t.consumer;
+    if (item.id === 'banking') return t.banking;
+    if (item.id === 'cybercrime') return t.cybercrime;
+    if (item.id === 'police') return t.police;
+    return item.title;
+  };
+
   return (
     <View style={styles.container}>
       {/* Section Header */}
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Common Legal Issues</Text>
+        <Text style={styles.sectionTitle}>{t.commonIssues}</Text>
         <TouchableOpacity
           style={styles.seeAllButton}
           onPress={onSeeAll}
           activeOpacity={0.7}
         >
-          <Text style={styles.seeAllText}>See all</Text>
+          <Text style={styles.seeAllText}>{t.seeAll}</Text>
           <Ionicons name="chevron-forward" size={14} color="#DE6027" />
         </TouchableOpacity>
       </View>
@@ -74,7 +88,7 @@ export const CommonLegalIssues: React.FC<CommonLegalIssuesProps> = ({
 
             {/* Title and Subtitle */}
             <Text style={styles.cardTitle} numberOfLines={1}>
-              {item.title}
+              {getCategoryTitle(item)}
             </Text>
             <Text style={styles.cardSubtitle} numberOfLines={2}>
               {item.subtitle}

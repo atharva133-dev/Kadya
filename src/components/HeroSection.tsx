@@ -1,13 +1,17 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { getTranslation } from '../locales/translations';
 
-export const HeroSection: React.FC = () => {
+interface HeroSectionProps {
+  language?: string;
+}
+
+export const HeroSection: React.FC<HeroSectionProps> = ({ language = 'EN' }) => {
+  const t = getTranslation(language);
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tell us what happened.</Text>
-      <Text style={styles.subtitle}>
-        Type or speak in your own words. We'll help you understand your rights and next steps.
-      </Text>
+      <Text style={styles.title}>{t.describeTitle}</Text>
+      <Text style={styles.subtitle}>{t.describeSubtitle}</Text>
     </View>
   );
 };

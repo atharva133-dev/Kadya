@@ -29,6 +29,7 @@ interface GeminiRagChatbotModalProps {
   initialQuery?: string;
   onOpenDraftWithId: (templateId: string) => void;
   onOpenHelpline: () => void;
+  language?: string;
 }
 
 export const GeminiRagChatbotModal: React.FC<GeminiRagChatbotModalProps> = ({
@@ -37,6 +38,7 @@ export const GeminiRagChatbotModal: React.FC<GeminiRagChatbotModalProps> = ({
   initialQuery = '',
   onOpenDraftWithId,
   onOpenHelpline,
+  language = 'EN',
 }) => {
   const [inputText, setInputText] = useState<string>('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -83,8 +85,18 @@ Describe your legal dispute or question. I will summarize your position without 
     setInputText('');
     setIsTyping(true);
 
+    const langNames: Record<string, string> = {
+      EN: 'English',
+      HI: 'Hindi',
+      MR: 'Marathi',
+      GU: 'Gujarati',
+      BN: 'Bengali',
+      TA: 'Tamil',
+    };
+    const langName = langNames[language] || 'English';
+
     // Call Gemini Legal Agent for structured clean JSON response
-    askGeminiLegalAgent(query)
+    askGeminiLegalAgent(query, langName)
       .then((agentResp: GeminiAgentResponse) => {
         const geminiMsg: ChatMessage = {
           id: `gemini-${Date.now()}`,

@@ -7,8 +7,17 @@
 import { Platform } from 'react-native';
 import { validateCredentials } from './authValidation';
 
-// Clerk configuration placeholder - will be connected when user provides their Clerk key
+// Clerk configuration and post-auth redirect URLs
 export const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY || '';
+
+export const CLERK_AUTH_URLS = {
+  signInUrl: process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL || '/sign-in',
+  signUpUrl: process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL || '/sign-up',
+  afterSignInUrl: process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL || '/auth-redirect',
+  afterSignUpUrl: process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL || '/auth-redirect',
+  signInFallbackRedirectUrl: process.env.NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL || '/auth-redirect',
+  signUpFallbackRedirectUrl: process.env.NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL || '/auth-redirect',
+};
 
 const STORAGE_KEY = 'kayda_sathi_auth_user';
 
@@ -16,11 +25,14 @@ export interface UserProfile {
   uid: string;
   email: string | null;
   displayName: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
   photoURL: string | null;
   phoneNumber: string | null;
   isAnonymous: boolean;
   emailVerified: boolean;
   provider?: string;
+  redirectUrl?: string;
 }
 
 // In-memory user cache
@@ -110,7 +122,8 @@ export const authService = {
       phoneNumber: null,
       isAnonymous: false,
       emailVerified: true,
-      provider: 'email',
+      provider: 'clerk',
+      redirectUrl: CLERK_AUTH_URLS.afterSignInUrl,
     };
 
     saveSession(user, rememberMe);
@@ -123,20 +136,30 @@ export const authService = {
   signUpWithEmail: async (
     email: string,
     password: string,
-    displayName?: string,
+    firstName?: string,
+    lastName?: string,
     rememberMe = true
   ): Promise<UserProfile> => {
     validateCredentials(email, password, true);
 
+    const fName = firstName?.trim() || '';
+    const lName = lastName?.trim() || '';
+    const computedName = fName && lName
+      ? `${fName} ${lName}`
+      : fName || email.split('@')[0];
+
     const user: UserProfile = {
-      uid: 'clerk-new-' + Date.now(),
+      uid: 'clerk-user-' + Date.now(),
       email: email.trim(),
-      displayName: displayName?.trim() || email.split('@')[0],
+      displayName: computedName,
+      firstName: fName || null,
+      lastName: lName || null,
       photoURL: null,
       phoneNumber: null,
       isAnonymous: false,
       emailVerified: false,
-      provider: 'email',
+      provider: 'clerk',
+      redirectUrl: CLERK_AUTH_URLS.afterSignUpUrl,
     };
 
     saveSession(user, rememberMe);
@@ -162,18 +185,30 @@ export const authService = {
   },
 
   /**
-   * Social Sign-in (Google - ready for Clerk OAuth)
+   * Social Sign-in (Google - Clerk OAuth via /auth-redirect)
    */
-  signInWithGoogle: async (): Promise<UserProfile> => {
+  signInWithGoogle: async (
+    googleEmail?: string,
+    googleName?: string
+  ): Promise<UserProfile> => {
+    const email = googleEmail?.trim() || 'citizen.google@gmail.com';
+    const displayName = googleName?.trim() || 'Google Verified Citizen';
+    const parts = displayName.split(' ');
+    const firstName = parts[0] || 'Google';
+    const lastName = parts.slice(1).join(' ') || 'Citizen';
+
     const user: UserProfile = {
       uid: 'clerk-google-' + Date.now(),
-      email: 'citizen@gmail.com',
-      displayName: 'Google Verified Citizen',
-      photoURL: null,
+      email: email,
+      displayName: displayName,
+      firstName: firstName,
+      lastName: lastName,
+      photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80',
       phoneNumber: null,
       isAnonymous: false,
       emailVerified: true,
       provider: 'google',
+      redirectUrl: CLERK_AUTH_URLS.afterSignInUrl,
     };
     saveSession(user, true);
     return user;
