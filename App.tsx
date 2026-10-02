@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Platform, ActivityIndicator, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -12,7 +12,7 @@ import { ProfileScreen } from './src/screens/ProfileScreen';
 import { BottomNavBar } from './src/components/BottomNavBar';
 import { DraftModal } from './src/components/DraftModal';
 import { LanguageModal } from './src/components/LanguageModal';
-import { UserProfile } from './src/services/authService';
+import { authService, UserProfile } from './src/services/authService';
 import { TabType } from './src/types';
 
 type AppFlow = 'onboarding' | 'login' | 'main';
@@ -21,6 +21,18 @@ function MainApp() {
   const insets = useSafeAreaInsets();
   const [currentFlow, setCurrentFlow] = useState<AppFlow>('onboarding');
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+
+  const [restoringSession, setRestoringSession] = useState(true);
+
+  useEffect(() => authService.subscribe(user => {
+    setUserProfile(user);
+    if (user) setCurrentFlow('main');
+    else setCurrentFlow(flow => flow === 'main' ? 'login' : flow);
+    setRestoringSession(false);
+  }, message => {
+    setRestoringSession(false);
+    Alert.alert('Sign-in unavailable', message);
+  }), []);
 
   // Main App Tabs
   const [activeTab, setActiveTab] = useState<TabType>('home');
@@ -35,9 +47,15 @@ function MainApp() {
   };
 
   // Handle logout
-  const handleSignOut = () => {
-    setUserProfile(null);
-    setCurrentFlow('login');
+  const handleSignOut = async () => {
+    try {
+      await authService.signOut();
+      setActiveTab('home');
+      setGlobalDraftOpen(false);
+      setGlobalLangOpen(false);
+    } catch (error) {
+      Alert.alert('Could not sign out', error instanceof Error ? error.message : 'Please try again.');
+    }
   };
 
   const renderActiveTabScreen = () => {
@@ -121,17 +139,30 @@ function MainApp() {
   };
 
   return (
-    <View style={styles.rootBackground}>
+    <View
+      style={[
+        styles.rootBackground,
+        currentFlow === 'onboarding' && { backgroundColor: '#FDF9F1' },
+      ]}
+    >
       <View
         style={[
           styles.appContainer,
           {
-            paddingTop: Platform.OS === 'web' ? 0 : insets.top,
+            paddingTop: currentFlow === 'onboarding' || Platform.OS === 'web' ? 0 : insets.top,
           },
+          currentFlow === 'onboarding' && {
+            maxWidth: 430,
+            boxShadow: 'none',
+          } as any,
         ]}
       >
         <StatusBar style="dark" />
-        {renderFlowScreen()}
+        {restoringSession ? (
+          <View style={styles.loadingScreen}>
+            <ActivityIndicator size="large" color="#DE6027" accessibilityLabel="Restoring your session" />
+          </View>
+        ) : renderFlowScreen()}
       </View>
     </View>
   );
@@ -146,21 +177,25 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  loadingScreen: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   rootBackground: {
     flex: 1,
-    backgroundColor: '#EAE6DF',
+    backgroundColor: '#FDF9F1',
     alignItems: 'center',
     justifyContent: 'center',
+    width: '100%',
+    height: '100%',
   },
   appContainer: {
     flex: 1,
     width: '100%',
-    maxWidth: 480, // Responsive mobile preview container on web desktop
-    backgroundColor: '#FAF6EF',
+    backgroundColor: '#FDF9F1',
+    alignSelf: 'center',
     ...Platform.select({
       web: {
+        maxWidth: 440,
         height: '100%',
-        boxShadow: '0 0 30px rgba(15, 23, 42, 0.12)',
+        boxShadow: 'none',
         overflow: 'hidden',
       } as any,
     }),

@@ -11,7 +11,17 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { analyzeLegalQueryWithGemini } from '../data/legalData';
-import { ChatMessage, GeminiLegalAnalysis } from '../types';
+import {
+  askGeminiLegalAgent,
+  cleanMarkdownText,
+} from '../services/geminiService';
+import {
+  startListening,
+  stopListening,
+  speakText,
+  stopSpeaking,
+} from '../services/voiceService';
+import { ChatMessage, GeminiLegalAnalysis, GeminiAgentResponse } from '../types';
 
 interface GeminiRagChatbotModalProps {
   visible: boolean;
@@ -32,6 +42,8 @@ export const GeminiRagChatbotModal: React.FC<GeminiRagChatbotModalProps> = ({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const [checkedDocs, setCheckedDocs] = useState<{ [docName: string]: boolean }>({});
+  const [isVoiceRecording, setIsVoiceRecording] = useState<boolean>(false);
+  const [speakingMsgId, setSpeakingMsgId] = useState<string | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Initialize or handle initialQuery
@@ -41,16 +53,14 @@ export const GeminiRagChatbotModal: React.FC<GeminiRagChatbotModalProps> = ({
     if (initialQuery.trim().length > 0) {
       handleUserSubmit(initialQuery);
     } else if (messages.length === 0) {
-      // Welcome message from Gemini
+      // Welcome message from Gemini Legal Agent
       setMessages([
         {
           id: 'welcome',
           sender: 'gemini',
-          text: `Namaste! I am Kayda Sathi AI, powered by Gemini RAG (Retrieval-Augmented Generation on Indian Law).
+          text: `Namaste! I am the Kayda Sathi Legal Agent, specialized in Indian Law.
 
-Describe your legal dispute in simple language or voice (e.g. "My landlord has not returned my security deposit even after I moved out"). 
-
-I will instantly identify your rights, provide a required documents checklist, outline your next steps, name the exact authority to approach, and generate a customized complaint draft.`,
+Describe your legal dispute or question. I will summarize your position without complicated jargon, identify your statutory rights, prepare an evidence checklist, outline an action roadmap, and generate a pre-filled complaint notice.`,
           timestamp: 'Just now',
         },
       ]);
@@ -58,7 +68,7 @@ I will instantly identify your rights, provide a required documents checklist, o
   }, [visible, initialQuery]);
 
   const handleUserSubmit = (textToSend: string) => {
-    const query = textToSend.trim();
+    const query = cleanMarkdownText(textToSend);
     if (!query) return;
 
     const userMsgId = `user-${Date.now()}`;
@@ -73,25 +83,38 @@ I will instantly identify your rights, provide a required documents checklist, o
     setInputText('');
     setIsTyping(true);
 
-    // Simulate Gemini RAG reasoning and statutory retrieval
-    setTimeout(() => {
-      const analysis: GeminiLegalAnalysis = analyzeLegalQueryWithGemini(query);
+    // Call Gemini Legal Agent for structured clean JSON response
+    askGeminiLegalAgent(query)
+      .then((agentResp: GeminiAgentResponse) => {
+        const geminiMsg: ChatMessage = {
+          id: `gemini-${Date.now()}`,
+          sender: 'gemini',
+          text: agentResp.summary,
+          timestamp: 'Just now',
+          agentResponse: agentResp,
+        };
 
-      const geminiMsg: ChatMessage = {
-        id: `gemini-${Date.now()}`,
-        sender: 'gemini',
-        text: analysis.summaryInPlainLanguage,
-        timestamp: 'Just now',
-        analysis,
-      };
+        setMessages((prev) => [...prev, geminiMsg]);
+        setIsTyping(false);
 
-      setMessages((prev) => [...prev, geminiMsg]);
-      setIsTyping(false);
+        setTimeout(() => {
+          scrollViewRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      })
+      .catch((err) => {
+        console.warn('[KaydaSathi Agent] Chat submit error:', err);
+        const analysis: GeminiLegalAnalysis = analyzeLegalQueryWithGemini(query);
+        const geminiMsg: ChatMessage = {
+          id: `gemini-${Date.now()}`,
+          sender: 'gemini',
+          text: cleanMarkdownText(analysis.summaryInPlainLanguage),
+          timestamp: 'Just now',
+          analysis,
+        };
 
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-      }, 100);
-    }, 800);
+        setMessages((prev) => [...prev, geminiMsg]);
+        setIsTyping(false);
+      });
   };
 
   const toggleDocCheck = (docName: string) => {
@@ -109,12 +132,60 @@ I will instantly identify your rights, provide a required documents checklist, o
     'Police station refused to register FIR for phone theft.',
   ];
 
+  // Voice input toggle for chat input
+  const handleToggleVoiceInput = async () => {
+    if (isVoiceRecording) {
+      setIsVoiceRecording(false);
+      await stopListening();
+    } else {
+      setIsVoiceRecording(true);
+      await startListening({
+        languageBcp47: 'en-IN',
+        onInterimResult: (interim) => {
+          setInputText(interim);
+        },
+        onFinalResult: (final) => {
+          setInputText(final);
+          setIsVoiceRecording(false);
+        },
+        onError: () => {
+          setIsVoiceRecording(false);
+        },
+        onEnd: () => {
+          setIsVoiceRecording(false);
+        },
+      });
+    }
+  };
+
+  // Text to speech readout on Gemini message
+  const handleToggleSpeak = (msgId: string, text: string) => {
+    if (speakingMsgId === msgId) {
+      stopSpeaking();
+      setSpeakingMsgId(null);
+    } else {
+      stopSpeaking();
+      setSpeakingMsgId(msgId);
+      speakText(text, 'en-IN', () => {
+        setSpeakingMsgId(null);
+      });
+    }
+  };
+
+  const handleClose = () => {
+    stopListening();
+    stopSpeaking();
+    setIsVoiceRecording(false);
+    setSpeakingMsgId(null);
+    onClose();
+  };
+
   return (
     <Modal
       visible={visible}
       animationType="slide"
       transparent
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
     >
       <View style={styles.overlay}>
         <View style={styles.sheetContainer}>
@@ -128,13 +199,13 @@ I will instantly identify your rights, provide a required documents checklist, o
               <View>
                 <Text style={styles.title}>Kayda Sathi AI Legal Assistant</Text>
                 <Text style={styles.subtitle}>
-                  Grounded on Indian Statutes • 5-Pillar Action Plan
+                  Grounded on Indian Statutes • Voice & 5-Pillar Plan
                 </Text>
               </View>
             </View>
 
             <TouchableOpacity
-              onPress={onClose}
+              onPress={handleClose}
               style={styles.closeBtn}
               accessibilityLabel="Close Chatbot"
             >
@@ -200,11 +271,171 @@ I will instantly identify your rights, provide a required documents checklist, o
                         isUser ? styles.userText : styles.geminiText,
                       ]}
                     >
-                      {msg.text}
+                      {cleanMarkdownText(msg.text)}
                     </Text>
 
-                    {/* Rich 5-Pillar Analysis Card if present */}
-                    {msg.analysis && (
+                    {!isUser && (
+                      <TouchableOpacity
+                        style={styles.bubbleSpeakBtn}
+                        onPress={() => handleToggleSpeak(msg.id, cleanMarkdownText(msg.text))}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons
+                          name={speakingMsgId === msg.id ? 'pause-circle' : 'volume-medium-outline'}
+                          size={14}
+                          color={speakingMsgId === msg.id ? '#DE6027' : '#64748B'}
+                        />
+                        <Text
+                          style={[
+                            styles.bubbleSpeakText,
+                            speakingMsgId === msg.id && styles.bubbleSpeakTextActive,
+                          ]}
+                        >
+                          {speakingMsgId === msg.id ? 'Stop Audio' : 'Listen / सुनिए'}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+
+                    {/* Rich Structured Agent Response Card (Zero ** or //) */}
+                    {msg.agentResponse && (
+                      <View style={styles.analysisContainer}>
+                        {/* Domain & Agent Confidence Pill */}
+                        <View style={styles.domainPill}>
+                          <Ionicons name="shield-checkmark" size={14} color="#0F766E" />
+                          <Text style={styles.domainPillText}>
+                            {msg.agentResponse.identifiedIssue} • {msg.agentResponse.confidenceScore}% Agent Confidence
+                          </Text>
+                        </View>
+
+                        {/* Pillar 1: Core Rights */}
+                        {msg.agentResponse.coreRights.length > 0 && (
+                          <View style={styles.pillarSection}>
+                            <View style={styles.pillarHeader}>
+                              <Ionicons name="scale" size={16} color="#DE6027" />
+                              <Text style={styles.pillarTitle}>1. Your Rights Under Indian Law</Text>
+                            </View>
+                            {msg.agentResponse.coreRights.map((right, rIdx) => (
+                              <View key={rIdx} style={styles.bulletItem}>
+                                <Ionicons name="checkmark-circle" size={14} color="#16A34A" />
+                                <Text style={styles.bulletText}>{right}</Text>
+                              </View>
+                            ))}
+                          </View>
+                        )}
+
+                        {/* Pillar 2: Required Documents Checklist */}
+                        {msg.agentResponse.requiredDocuments.length > 0 && (
+                          <View style={styles.pillarSection}>
+                            <View style={styles.pillarHeader}>
+                              <Ionicons name="checkbox" size={16} color="#2563EB" />
+                              <Text style={styles.pillarTitle}>2. Required Documents Checklist</Text>
+                            </View>
+                            <Text style={styles.checklistHint}>
+                              Tap to check off documents you have ready:
+                            </Text>
+                            {msg.agentResponse.requiredDocuments.map((doc, dIdx) => {
+                              const isChecked = !!checkedDocs[doc];
+                              return (
+                                <TouchableOpacity
+                                  key={dIdx}
+                                  style={[
+                                    styles.docCheckRow,
+                                    isChecked && styles.docCheckRowChecked,
+                                  ]}
+                                  onPress={() => toggleDocCheck(doc)}
+                                  activeOpacity={0.7}
+                                >
+                                  <Ionicons
+                                    name={isChecked ? 'checkbox' : 'square-outline'}
+                                    size={18}
+                                    color={isChecked ? '#16A34A' : '#94A3B8'}
+                                  />
+                                  <Text
+                                    style={[
+                                      styles.docCheckText,
+                                      isChecked && styles.docCheckTextChecked,
+                                    ]}
+                                  >
+                                    {doc}
+                                  </Text>
+                                </TouchableOpacity>
+                              );
+                            })}
+                          </View>
+                        )}
+
+                        {/* Pillar 3: Action Roadmap */}
+                        {msg.agentResponse.actionSteps.length > 0 && (
+                          <View style={styles.pillarSection}>
+                            <View style={styles.pillarHeader}>
+                              <Ionicons name="footsteps" size={16} color="#7C3AED" />
+                              <Text style={styles.pillarTitle}>3. Step-by-Step Action Roadmap</Text>
+                            </View>
+                            {msg.agentResponse.actionSteps.map((step, sIdx) => (
+                              <View key={sIdx} style={styles.stepBox}>
+                                <Text style={styles.stepText}>{step}</Text>
+                              </View>
+                            ))}
+                          </View>
+                        )}
+
+                        {/* Pillar 4: Authority & Helpline */}
+                        <View style={styles.pillarSection}>
+                          <View style={styles.pillarHeader}>
+                            <Ionicons name="business" size={16} color="#0D9488" />
+                            <Text style={styles.pillarTitle}>4. Appropriate Authority to Contact</Text>
+                          </View>
+                          <View style={styles.authorityCard}>
+                            <Text style={styles.authName}>
+                              {msg.agentResponse.authority.name}
+                            </Text>
+                            <View style={styles.authMetaRow}>
+                              {msg.agentResponse.authority.portal && (
+                                <View style={styles.authMetaItem}>
+                                  <Ionicons name="globe-outline" size={13} color="#475569" />
+                                  <Text style={styles.authMetaText}>
+                                    {msg.agentResponse.authority.portal}
+                                  </Text>
+                                </View>
+                              )}
+                              <TouchableOpacity
+                                style={styles.authMetaItem}
+                                onPress={onOpenHelpline}
+                              >
+                                <Ionicons name="call" size={13} color="#DE6027" />
+                                <Text style={[styles.authMetaText, { color: '#DE6027', fontWeight: '700' }]}>
+                                  {msg.agentResponse.authority.helpline}
+                                </Text>
+                              </TouchableOpacity>
+                            </View>
+                          </View>
+                        </View>
+
+                        {/* Pillar 5: Action Draft */}
+                        <View style={styles.draftCtaBox}>
+                          <Text style={styles.draftCtaHint}>
+                            Ready to take action? Customize your pre-filled formal notice:
+                          </Text>
+                          <TouchableOpacity
+                            style={styles.openDraftBtn}
+                            onPress={() => {
+                              onClose();
+                              onOpenDraftWithId(msg.agentResponse!.draftTemplateId);
+                            }}
+                            activeOpacity={0.85}
+                          >
+                            <Ionicons name="document-text" size={18} color="#FFFFFF" />
+                            <Text style={styles.openDraftBtnText}>
+                              Open {msg.agentResponse.recommendedDraftTitle || 'Legal Notice Draft'}
+                            </Text>
+                            <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    )}
+
+                    {/* Fallback to local 5-pillar analysis if agentResponse not available */}
+                    {!msg.agentResponse && msg.analysis && (
                       <View style={styles.analysisContainer}>
                         {/* Domain & Confidence Badge */}
                         <View style={styles.domainPill}>
@@ -356,10 +587,29 @@ I will instantly identify your rights, provide a required documents checklist, o
 
           {/* Chat Input Bar */}
           <View style={styles.inputContainer}>
+            <TouchableOpacity
+              style={[
+                styles.voiceInputBtn,
+                isVoiceRecording && styles.voiceInputBtnActive,
+              ]}
+              onPress={handleToggleVoiceInput}
+              activeOpacity={0.8}
+              accessibilityLabel="Speak message"
+            >
+              <Ionicons
+                name={isVoiceRecording ? 'stop' : 'mic'}
+                size={18}
+                color={isVoiceRecording ? '#FFFFFF' : '#DE6027'}
+              />
+            </TouchableOpacity>
+
             <TextInput
-              style={styles.inputField}
-              placeholder="Ask Gemini or describe your legal issue..."
-              placeholderTextColor="#94A3B8"
+              style={[
+                styles.inputField,
+                isVoiceRecording && styles.inputFieldRecording,
+              ]}
+              placeholder={isVoiceRecording ? 'Listening to voice... Speak now' : 'Ask Gemini or describe your legal issue...'}
+              placeholderTextColor={isVoiceRecording ? '#DC2626' : '#94A3B8'}
               value={inputText}
               onChangeText={setInputText}
               onSubmitEditing={() => handleUserSubmit(inputText)}
@@ -755,5 +1005,43 @@ const styles = StyleSheet.create({
   },
   sendBtnDisabled: {
     backgroundColor: '#CBD5E1',
+  },
+  voiceInputBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFF7ED',
+    borderWidth: 1.5,
+    borderColor: '#FED7AA',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  voiceInputBtnActive: {
+    backgroundColor: '#EF4444',
+    borderColor: '#DC2626',
+  },
+  inputFieldRecording: {
+    borderColor: '#F87171',
+    backgroundColor: '#FEF2F2',
+  },
+  bubbleSpeakBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    alignSelf: 'flex-start',
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    marginTop: 6,
+  },
+  bubbleSpeakText: {
+    fontSize: 11,
+    color: '#64748B',
+    fontWeight: '600',
+  },
+  bubbleSpeakTextActive: {
+    color: '#DE6027',
+    fontWeight: '700',
   },
 });

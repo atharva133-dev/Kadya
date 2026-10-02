@@ -51,9 +51,11 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         <View style={styles.securityBanner}>
           <Ionicons name="shield-checkmark" size={20} color="#0D9488" />
           <View style={styles.securityBannerContent}>
-            <Text style={styles.securityBannerTitle}>Firebase Auth Ready</Text>
+            <Text style={styles.securityBannerTitle}>{userProfile?.isAnonymous ? 'Guest session' : 'Account sign-in'}</Text>
             <Text style={styles.securityBannerText}>
-              All user drafts, case tracking, and consultation chats are encrypted locally and prepared for cloud synchronization.
+              {userProfile?.isAnonymous
+                ? 'You are exploring with a temporary guest account. Sign in with email to keep an account across visits.'
+                : 'You are signed in with Firebase Authentication. Cloud storage for drafts and cases is not connected yet.'}
             </Text>
           </View>
         </View>

@@ -9,6 +9,7 @@ import {
   ScrollView,
   Platform,
   ActivityIndicator,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { JusticeScaleLogo } from '../components/JusticeScaleLogo';
@@ -34,6 +35,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   const [infoMessage, setInfoMessage] = useState<string>('');
 
   const handleSignIn = async () => {
+    if (loading) return;
     setLoading(true);
     setErrorMessage('');
     setInfoMessage('');
@@ -41,18 +43,21 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       let user: UserProfile;
       if (isSignUp) {
         user = await authService.signUpWithEmail(
-          email || 'citizen@kaydasathi.in',
-          password || 'password123'
+          email,
+          password,
+          undefined,
+          rememberMe
         );
       } else {
         user = await authService.signInWithEmail(
-          email || 'citizen@kaydasathi.in',
-          password || 'password123'
+          email,
+          password,
+          rememberMe
         );
       }
       onLoginSuccess(user);
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Authentication failed. Please try again.');
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : 'Authentication failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -63,42 +68,35 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       setErrorMessage('Please enter your email above to receive a password reset link.');
       return;
     }
+    if (loading) return;
     setLoading(true);
     setErrorMessage('');
     try {
       await authService.sendPasswordReset(email);
-      setInfoMessage(`Password reset link sent to ${email}. Check your Gmail inbox!`);
-    } catch (err: any) {
-      setErrorMessage('Could not send reset email. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSocialAuth = async (provider: 'google' | 'apple' | 'phone') => {
-    setLoading(true);
-    setErrorMessage('');
-    setInfoMessage('');
-    try {
-      let user: UserProfile;
-      if (provider === 'google') user = await authService.signInWithGoogle();
-      else if (provider === 'apple') user = await authService.signInWithApple();
-      else user = await authService.signInWithPhone();
-      onLoginSuccess(user);
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Social sign-in failed.');
+      setInfoMessage('If an account exists for this email, a password reset link has been sent. Check your inbox.');
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : 'Could not send reset email. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleGuestContinue = async () => {
-    const user = await authService.signInAnonymously();
-    onLoginSuccess(user);
+    if (loading) return;
+    setLoading(true);
+    setErrorMessage('');
+    setInfoMessage('');
+    try {
+      onLoginSuccess(await authService.signInAnonymously());
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Could not start a guest session.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       {/* Botanical Decorative Leaf at Top Right */}
       <View style={styles.topLeafWrapper}>
         <Ionicons name="leaf" size={28} color="#94A3B8" style={{ opacity: 0.2 }} />
@@ -108,6 +106,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         style={styles.scrollBody}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {/* Back button if needed */}
         {onBackToOnboarding && (
@@ -142,51 +141,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           </Text>
         </View>
 
-        {/* Social Login Buttons */}
-        <View style={styles.socialButtonsGroup}>
-          {/* Google */}
-          <TouchableOpacity
-            style={styles.socialButton}
-            onPress={() => handleSocialAuth('google')}
-            activeOpacity={0.8}
-            accessibilityLabel="Continue with Google"
-          >
-            <View style={styles.googleIconCircle}>
-              <Ionicons name="logo-google" size={18} color="#EA4335" />
-            </View>
-            <Text style={styles.socialButtonText}>Continue with Google</Text>
-          </TouchableOpacity>
-
-          {/* Apple */}
-          <TouchableOpacity
-            style={styles.socialButton}
-            onPress={() => handleSocialAuth('apple')}
-            activeOpacity={0.8}
-            accessibilityLabel="Continue with Apple"
-          >
-            <Ionicons name="logo-apple" size={20} color="#000000" />
-            <Text style={styles.socialButtonText}>Continue with Apple</Text>
-          </TouchableOpacity>
-
-          {/* Phone */}
-          <TouchableOpacity
-            style={styles.socialButton}
-            onPress={() => handleSocialAuth('phone')}
-            activeOpacity={0.8}
-            accessibilityLabel="Continue with Phone"
-          >
-            <Ionicons name="call" size={18} color="#0F172A" />
-            <Text style={styles.socialButtonText}>Continue with Phone</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Divider */}
-        <View style={styles.dividerRow}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>OR</Text>
-          <View style={styles.dividerLine} />
-        </View>
-
         {/* Error message if any */}
         {errorMessage.length > 0 && (
           <View style={styles.errorBox}>
@@ -216,6 +170,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 placeholderTextColor="#94A3B8"
                 keyboardType="email-address"
                 autoCapitalize="none"
+                editable={!loading}
+                autoCorrect={false}
+                accessibilityLabel="Email"
+                autoComplete="email"
                 value={email}
                 onChangeText={setEmail}
               />
@@ -232,6 +190,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 placeholder="Enter your password"
                 placeholderTextColor="#94A3B8"
                 secureTextEntry={!showPassword}
+                editable={!loading}
+                autoCapitalize="none"
+                autoCorrect={false}
+                accessibilityLabel="Password"
+                autoComplete={isSignUp ? 'new-password' : 'current-password'}
                 value={password}
                 onChangeText={setPassword}
               />
@@ -252,6 +215,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           <View style={styles.rememberRow}>
             <TouchableOpacity
               style={styles.rememberLeft}
+              disabled={loading}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: rememberMe }}
               onPress={() => setRememberMe(!rememberMe)}
               activeOpacity={0.7}
             >
@@ -261,7 +227,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               <Text style={styles.rememberText}>Remember me</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={handleForgotPassword} activeOpacity={0.7}>
+            <TouchableOpacity onPress={handleForgotPassword} disabled={loading} activeOpacity={0.7}>
               <Text style={styles.forgotPasswordText}>Forgot password?</Text>
             </TouchableOpacity>
           </View>
@@ -272,7 +238,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             onPress={handleSignIn}
             disabled={loading}
             activeOpacity={0.88}
-            accessibilityLabel="Sign In"
+            accessibilityRole="button"
+            accessibilityLabel={isSignUp ? 'Sign Up' : 'Sign In'}
           >
             {loading ? (
               <ActivityIndicator color="#FFFFFF" size="small" />
@@ -289,7 +256,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             <Text style={styles.toggleLabel}>
               {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
             </Text>
-            <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)} activeOpacity={0.7}>
+            <TouchableOpacity disabled={loading} onPress={() => { setIsSignUp(!isSignUp); setErrorMessage(''); setInfoMessage(''); }} activeOpacity={0.7}>
               <Text style={styles.toggleLink}>{isSignUp ? 'Sign In' : 'Sign Up'}</Text>
             </TouchableOpacity>
           </View>
@@ -297,6 +264,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           {/* Continue as Guest option */}
           <TouchableOpacity
             style={styles.guestLink}
+            disabled={loading}
+            accessibilityRole="button"
             onPress={handleGuestContinue}
             activeOpacity={0.7}
           >
@@ -307,7 +276,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           <View style={styles.trustBadge}>
             <Ionicons name="shield-checkmark" size={18} color="#64748B" />
             <Text style={styles.trustBadgeText}>
-              Your information is private and secure. We never share your data.
+              Your account is protected with Clerk Authentication.
             </Text>
           </View>
         </View>
@@ -321,7 +290,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           />
         </View>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -342,6 +311,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: Platform.OS === 'android' ? 24 : 16,
+    paddingBottom: 24,
   },
   backButton: {
     marginLeft: 20,
@@ -400,64 +370,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 6,
     lineHeight: 19,
-  },
-  socialButtonsGroup: {
-    paddingHorizontal: 24,
-    gap: 10,
-    marginBottom: 16,
-  },
-  socialButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 24,
-    height: 48,
-    gap: 10,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.04,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 1,
-      },
-      web: {
-        boxShadow: '0 1px 6px rgba(0, 0, 0, 0.04)',
-      },
-    }),
-  },
-  googleIconCircle: {
-    width: 24,
-    height: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  socialButtonText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#1E293B',
-  },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 28,
-    marginVertical: 12,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E2E8F0',
-  },
-  dividerText: {
-    fontSize: 11.5,
-    fontWeight: '700',
-    color: '#94A3B8',
-    marginHorizontal: 12,
   },
   errorBox: {
     flexDirection: 'row',

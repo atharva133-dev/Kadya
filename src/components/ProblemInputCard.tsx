@@ -40,21 +40,6 @@ export const ProblemInputCard: React.FC<ProblemInputCardProps> = ({
 
   return (
     <View style={styles.wrapper}>
-      {/* Gemini RAG Announcement Banner */}
-      <TouchableOpacity
-        style={styles.geminiBanner}
-        onPress={() => onOpenGeminiChat(value)}
-        activeOpacity={0.8}
-      >
-        <View style={styles.geminiBannerLeft}>
-          <Ionicons name="sparkles" size={16} color="#DE6027" />
-          <Text style={styles.geminiBannerTitle}>Gemini RAG Legal Assistant</Text>
-        </View>
-        <View style={styles.geminiBannerRight}>
-          <Text style={styles.geminiBannerAction}>Chat with AI</Text>
-          <Ionicons name="chevron-forward" size={14} color="#DE6027" />
-        </View>
-      </TouchableOpacity>
 
       {/* Main Input Box Card */}
       <View style={styles.card}>
@@ -163,38 +148,6 @@ const styles = StyleSheet.create({
   wrapper: {
     paddingHorizontal: 20,
     marginTop: 12,
-  },
-  geminiBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFF7ED',
-    borderWidth: 1,
-    borderColor: '#FED7AA',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    marginBottom: 10,
-  },
-  geminiBannerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  geminiBannerTitle: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#C2410C',
-  },
-  geminiBannerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-  },
-  geminiBannerAction: {
-    fontSize: 11.5,
-    fontWeight: '700',
-    color: '#DE6027',
   },
   card: {
     backgroundColor: '#FFFFFF',

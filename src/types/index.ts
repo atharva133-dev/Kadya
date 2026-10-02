@@ -67,10 +67,28 @@ export interface GeminiLegalAnalysis {
   summaryInPlainLanguage: string;
 }
 
+export interface GeminiAgentResponse {
+  summary: string;
+  identifiedIssue: string;
+  confidenceScore: number;
+  coreRights: string[];
+  actionSteps: string[];
+  requiredDocuments: string[];
+  authority: {
+    name: string;
+    helpline: string;
+    portal?: string;
+  };
+  recommendedDraftTitle?: string;
+  draftTemplateId: string;
+}
+
 export interface ChatMessage {
   id: string;
   sender: 'user' | 'gemini';
   text: string;
   timestamp: string;
   analysis?: GeminiLegalAnalysis;
+  agentResponse?: GeminiAgentResponse;
 }
+

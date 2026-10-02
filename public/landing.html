@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kayda Sathi — Legal guidance for real people</title>
+  <meta name="description" content="Understand your rights, get clear next steps, required documents, and the support you need in simple language. Powered by AI and legal aid resources.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS v3 via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              orange: '#E85B24',
+              'orange-hover': '#D94D18',
+              'orange-light': '#FFF4ED',
+              navy: '#0B1B36',
+              'navy-light': '#14274A',
+              cream: '#FDF9F1',
+              slate: '#5C6E88',
+              border: '#EAE2D5',
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            serif: ['"Playfair Display"', 'Georgia', 'serif'],
+          },
+          boxShadow: {
+            'phone': '0 25px 60px -15px rgba(11, 27, 54, 0.25), 0 0 0 12px #1E293B',
+            'card-soft': '0 10px 30px -5px rgba(11, 27, 54, 0.06)',
+            'pill': '0 8px 24px -4px rgba(232, 91, 36, 0.3)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom SVG swoosh underline for 'real people.' */
+    .swoosh-underline {
+      position: relative;
+      display: inline-block;
+      color: #E85B24;
+    }
+    .swoosh-underline::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: -6px;
+      width: 100%;
+      height: 8px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 250 16' fill='none'%3E%3Cpath d='M3 11C45 3 150 2 247 10C170 14 75 15 3 11Z' fill='%23E85B24'/%3E%3C/svg%3E");
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+    }
+    /* Smooth glass card */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+  </style>
+</head>
+<body class="bg-[#FDF9F1] text-brand-navy font-sans antialiased selection:bg-[#E85B24] selection:text-white">
+
+  <!-- ========================================================================= -->
+  <!-- Top Global Navigation Bar                                                -->
+  <!-- ========================================================================= -->
+  <header class="sticky top-0 z-50 bg-[#FDF9F1]/90 backdrop-blur-md border-b border-[#EAE2D5]/80 transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Brand Logo & Name (Extracted from image) -->
+      <a href="#" class="flex items-center gap-3 group">
+        <!-- Exact Scales of Justice SVG Icon -->
+        <svg class="w-10 h-10 transform group-hover:rotate-[-4deg] transition-transform duration-300" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Pillar & Base (Navy) -->
+          <circle cx="50" cy="18" r="4.5" fill="#0B1B36" />
+          <path d="M48 22H52V82H48V22Z" fill="#0B1B36" />
+          <path d="M38 82H62V86C62 87.5 60.5 89 59 89H41C39.5 89 38 87.5 38 86V82Z" fill="#0B1B36" />
+          <!-- Beam (Navy) -->
+          <path d="M18 30C32 27 68 27 82 30C82 31.5 80.5 33 79 33H21C19.5 33 18 31.5 18 30Z" fill="#0B1B36" />
+          <!-- Left scale ropes & Navy Bowl -->
+          <path d="M22 32L12 55M22 32L32 55" stroke="#0B1B36" stroke-width="2" stroke-linecap="round" />
+          <path d="M10 55C10 65 34 65 34 55H10Z" fill="#0B1B36" />
+          <!-- Right scale ropes & Orange Bowl -->
+          <path d="M78 32L68 55M78 32L88 55" stroke="#0B1B36" stroke-width="2" stroke-linecap="round" />
+          <path d="M66 55C66 65 90 65 90 55H66Z" fill="#E85B24" />
+        </svg>
+
+        <div class="flex flex-col">
+          <div class="flex items-baseline text-2xl font-extrabold tracking-tight">
+            <span class="text-brand-navy">Kayda</span>
+            <span class="text-brand-orange ml-1">Sathi</span>
+          </div>
+          <span class="text-[11px] font-semibold text-brand-slate tracking-wider uppercase">Your Rights. Your Next Steps.</span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Links -->
+      <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-[#334764]">
+        <a href="#how-it-works" class="hover:text-brand-orange transition-colors">How It Works</a>
+        <a href="#five-pillars" class="hover:text-brand-orange transition-colors">5-Pillar Roadmap</a>
+        <a href="#common-issues" class="hover:text-brand-orange transition-colors">Legal Scenarios</a>
+        <a href="#code-export" class="hover:text-brand-orange transition-colors">Extracted Components</a>
+        <a href="#faq" class="hover:text-brand-orange transition-colors">FAQ</a>
+      </nav>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-3">
+        <a href="http://localhost:8081/" target="_blank" class="hidden sm:inline-flex text-xs font-bold uppercase tracking-wider text-brand-navy bg-[#F3ECE1] hover:bg-[#EAE0D1] px-4 py-2.5 rounded-full transition-colors">
+          Open Web App
+        </a>
+        <a href="#mobile-preview" class="inline-flex items-center gap-2 bg-brand-navy hover:bg-brand-navy-light text-white font-bold text-sm px-5 py-2.5 rounded-full shadow-md shadow-brand-navy/20 transition-all hover:scale-[1.02]">
+          <span>Get Started</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- HERO SECTION: Extracted Mobile Screen + Pitch                            -->
+  <!-- ========================================================================= -->
+  <section class="relative pt-12 pb-20 lg:pt-20 lg:pb-32 overflow-hidden" id="mobile-preview">
+    <!-- Soft background decorative glow -->
+    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-to-tr from-[#FFEADB]/40 to-[#FED7AA]/20 rounded-full blur-3xl pointer-events-none -z-10"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        
+        <!-- Left Column: Copy & Problem Statement Pitch -->
+        <div class="lg:col-span-7 flex flex-col items-start space-y-6">
+          
+          <!-- Government / Citizen Verified Badge -->
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F3ECE1] border border-[#EAE2D5] text-[#475569] text-xs font-bold tracking-wide">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Problem Statement 2 — Citizen Legal Companion</span>
+          </div>
+
+          <!-- Main Hero Title (Extracted verbatim from image) -->
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-brand-navy leading-[1.12] tracking-tight">
+            Legal guidance<br>
+            for <span class="swoosh-underline">real people.</span>
+          </h1>
+
+          <!-- Subtitle (Extracted verbatim from image) -->
+          <p class="text-lg sm:text-xl text-brand-slate font-normal leading-relaxed max-w-xl">
+            Understand your rights, get clear next steps and the support you need — <span class="text-brand-navy font-semibold">in simple language.</span>
+          </p>
+
+          <!-- Quick Scenario Selector Chips -->
+          <div class="w-full pt-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-brand-slate mb-3 block">Common Legal Scenarios:</span>
+            <div class="flex flex-wrap gap-2.5">
+              <button onclick="fillScenario('security-deposit')" class="px-3.5 py-2 rounded-full text-xs font-semibold bg-white border border-[#E5DFD5] hover:border-brand-orange hover:bg-brand-orange-light text-[#1E293B] shadow-sm transition-all flex items-center gap-1.5">
+                <span>🏠</span> Security Deposit Not Returned
+              </button>
+              <button onclick="fillScenario('online-fraud')" class="px-3.5 py-2 rounded-full text-xs font-semibold bg-white border border-[#E5DFD5] hover:border-brand-orange hover:bg-brand-orange-light text-[#1E293B] shadow-sm transition-all flex items-center gap-1.5">
+                <span>💳</span> Online Purchase Fraud
+              </button>
+              <button onclick="fillScenario('salary-unpaid')" class="px-3.5 py-2 rounded-full text-xs font-semibold bg-white border border-[#E5DFD5] hover:border-brand-orange hover:bg-brand-orange-light text-[#1E293B] shadow-sm transition-all flex items-center gap-1.5">
+                <span>💼</span> Unpaid Salary / Wrongful Termination
+              </button>
+            </div>
+          </div>
+
+          <!-- Action CTA & Trust Signals -->
+          <div class="pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
+            <a href="http://localhost:8081/" target="_blank" class="inline-flex items-center justify-center gap-3 bg-brand-navy hover:bg-brand-navy-light text-white font-bold text-base px-8 py-4 rounded-full shadow-lg shadow-brand-navy/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
+              <span>Try Live Interactive App</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </a>
+            <a href="#code-export" class="inline-flex items-center justify-center gap-2 bg-white hover:bg-[#F8F5EE] border border-[#E2D9CC] text-brand-navy font-bold text-base px-6 py-4 rounded-full shadow-sm transition-colors">
+              <svg class="w-5 h-5 text-brand-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+              <span>View Tailwind Code</span>
+            </a>
+          </div>
+
+          <!-- Key Guarantees Row -->
+          <div class="pt-2 flex items-center gap-6 text-xs text-brand-slate font-medium">
+            <div class="flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+              <span>100% Free & Open Access</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+              <span>Voice & Plain Language</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+              <span>Private & Confidential</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- Right Column: EXACT EXTRACTED MOBILE ONBOARDING SCREEN              -->
+        <!-- =================================================================== -->
+        <div class="lg:col-span-5 flex justify-center">
+          
+          <!-- Outer Phone Frame Mockup -->
+          <div class="relative w-full max-w-[420px] rounded-[48px] p-3 bg-gradient-to-b from-[#334155] to-[#0F172A] shadow-phone">
+            
+            <!-- Phone Speaker & Camera Notch -->
+            <div class="absolute top-6 left-1/2 -translate-x-1/2 w-28 h-4 bg-[#0F172A] rounded-full z-30 flex items-center justify-center">
+              <div class="w-12 h-1 bg-[#334155] rounded-full mr-2"></div>
+              <div class="w-2.5 h-2.5 bg-[#1E293B] rounded-full"></div>
+            </div>
+
+            <!-- Inside Mobile Screen Canvas (Pure HTML + Tailwind CSS extraction) -->
+            <div class="relative w-full aspect-[473/1024] bg-[#FDF9F1] rounded-[38px] overflow-hidden flex flex-col justify-between select-none">
+              
+              <!-- Background Illustration Layer (Extracted Artwork) -->
+              <img 
+                src="images/onboarding_bg_v2.png" 
+                alt="Kayda Sathi Citizen Artwork" 
+                class="absolute inset-0 w-full h-full object-contain pointer-events-none"
+              />
+
+              <!-- Interactive Overlay Hotspot: Skip Button -->
+              <button 
+                onclick="handleOnboardingAction('skip')" 
+                title="Skip to Login"
+                class="absolute top-[3%] right-[4.5%] w-[18%] h-[4.5%] rounded-full z-20 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-orange"
+              ></button>
+
+              <!-- Interactive Overlay Hotspot: Banner Card -->
+              <button 
+                onclick="handleOnboardingAction('banner')" 
+                title="View Step-by-Step Guidance"
+                class="absolute top-[76.2%] left-[7.5%] right-[7.5%] h-[8.2%] rounded-2xl z-20 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-orange"
+              ></button>
+
+              <!-- Interactive Overlay Hotspot: Get Started Button -->
+              <button 
+                onclick="handleOnboardingAction('get-started')" 
+                title="Get Started"
+                class="absolute top-[89.5%] left-[8.2%] right-[8.2%] h-[5.5%] rounded-full z-20 cursor-pointer transition-transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-brand-orange"
+              ></button>
+
+              <!-- Top Indicator Badge -->
+              <div class="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-black/20 rounded-full z-20 pointer-events-none"></div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 5-PILLAR LEGAL ROADMAP: Matching Problem Statement 2                     -->
+  <!-- ========================================================================= -->
+  <section class="py-20 bg-white border-y border-[#EAE2D5]" id="five-pillars">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <span class="text-xs font-extrabold uppercase tracking-widest text-brand-orange">Problem Statement 2 Architecture</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-brand-navy mt-2">
+          From “I don't know what to do” to “I know my next steps”
+        </h2>
+        <p class="text-brand-slate text-base mt-4 leading-relaxed">
+          Kayda Sathi converts confusing legal jargon into a structured, actionable 5-pillar pathway for any everyday legal dispute in India.
+        </p>
+      </div>
+
+      <!-- 5 Pillars Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        
+        <!-- Pillar 1: Rights & Remedies -->
+        <div class="p-8 rounded-3xl bg-[#FAF6EE] border border-[#EAE2D5] hover:border-brand-orange hover:shadow-card-soft transition-all group">
+          <div class="w-14 h-14 rounded-2xl bg-[#FFF4ED] text-brand-orange flex items-center justify-center text-2xl font-bold mb-6 group-hover:scale-110 transition-transform">
+            ⚖️
+          </div>
+          <span class="text-xs font-bold uppercase tracking-wider text-brand-orange">Pillar 1</span>
+          <h3 class="text-xl font-extrabold text-brand-navy mt-1 mb-3">Rights & Remedies</h3>
+          <p class="text-sm text-brand-slate leading-relaxed">
+            Identifies legal rights under statutory laws (e.g. Model Tenancy Act, Consumer Protection Act, Labor Code) in clear language.
+          </p>
+        </div>
+
+        <!-- Pillar 2: Required Documents Checklist -->
+        <div class="p-8 rounded-3xl bg-[#FAF6EE] border border-[#EAE2D5] hover:border-brand-orange hover:shadow-card-soft transition-all group">
+          <div class="w-14 h-14 rounded-2xl bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center text-2xl font-bold mb-6 group-hover:scale-110 transition-transform">
+            📁
+          </div>
+          <span class="text-xs font-bold uppercase tracking-wider text-[#2563EB]">Pillar 2</span>
+          <h3 class="text-xl font-extrabold text-brand-navy mt-1 mb-3">Required Documents</h3>
+          <p class="text-sm text-brand-slate leading-relaxed">
+            Interactive, itemized checklist of evidence needed (rent agreements, bank transaction receipts, emails, police complaint copies).
+          </p>
+        </div>
+
+        <!-- Pillar 3: Suggested Next Steps -->
+        <div class="p-8 rounded-3xl bg-[#FAF6EE] border border-[#EAE2D5] hover:border-brand-orange hover:shadow-card-soft transition-all group">
+          <div class="w-14 h-14 rounded-2xl bg-[#ECFDF5] text-[#10B981] flex items-center justify-center text-2xl font-bold mb-6 group-hover:scale-110 transition-transform">
+            🪜
+          </div>
+          <span class="text-xs font-bold uppercase tracking-wider text-[#10B981]">Pillar 3</span>
+          <h3 class="text-xl font-extrabold text-brand-navy mt-1 mb-3">Suggested Next Steps</h3>
+          <p class="text-sm text-brand-slate leading-relaxed">
+            Prioritized step-by-step action plan: informal negotiation &rarr; legal notice &rarr; filing formal complaint &rarr; mediation.
+          </p>
+        </div>
+
+        <!-- Pillar 4: Appropriate Authority -->
+        <div class="p-8 rounded-3xl bg-[#FAF6EE] border border-[#EAE2D5] hover:border-brand-orange hover:shadow-card-soft transition-all group">
+          <div class="w-14 h-14 rounded-2xl bg-[#FEF3C7] text-[#D97706] flex items-center justify-center text-2xl font-bold mb-6 group-hover:scale-110 transition-transform">
+            🏛️
+          </div>
+          <span class="text-xs font-bold uppercase tracking-wider text-[#D97706]">Pillar 4</span>
+          <h3 class="text-xl font-extrabold text-brand-navy mt-1 mb-3">Appropriate Authority</h3>
+          <p class="text-sm text-brand-slate leading-relaxed">
+            Directs citizens to the correct forum: Rent Authority, District Consumer Forum (NCDRC), Cyber Crime Portal, or NALSA Legal Aid.
+          </p>
+        </div>
+
+        <!-- Pillar 5: Basic Complaint Draft -->
+        <div class="p-8 rounded-3xl bg-[#FAF6EE] border border-[#EAE2D5] hover:border-brand-orange hover:shadow-card-soft transition-all group lg:col-span-2">
+          <div class="w-14 h-14 rounded-2xl bg-[#F5E6FE] text-[#9333EA] flex items-center justify-center text-2xl font-bold mb-6 group-hover:scale-110 transition-transform">
+            ✍️
+          </div>
+          <span class="text-xs font-bold uppercase tracking-wider text-[#9333EA]">Pillar 5</span>
+          <h3 class="text-xl font-extrabold text-brand-navy mt-1 mb-3">Customizable Complaint Draft</h3>
+          <p class="text-sm text-brand-slate leading-relaxed">
+            Generates ready-to-use formal letters (Legal Demand Notice, Formal Consumer Complaint, Police Application) that citizens can customize, copy, or print instantly.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- EXTRACTED COMPONENTS CODE PREVIEW (Tailwind CSS Extraction)               -->
+  <!-- ========================================================================= -->
+  <section class="py-20 bg-[#FDF9F1]" id="code-export">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-14">
+        <span class="text-xs font-extrabold uppercase tracking-widest text-brand-orange">Developer Handoff</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-brand-navy mt-2">
+          Extracted Tailwind CSS Components
+        </h2>
+        <p class="text-brand-slate text-sm sm:text-base mt-3">
+          Clean, production-ready semantic HTML and Tailwind CSS extracted directly from the reference screen.
+        </p>
+      </div>
+
+      <!-- Component 1: The 3 Value Prop Cards Container -->
+      <div class="bg-white rounded-3xl p-6 sm:p-10 border border-[#EAE2D5] shadow-card-soft mb-12">
+        <div class="flex items-center justify-between pb-6 border-b border-[#F1E8DC] mb-8">
+          <div>
+            <h3 class="text-lg font-bold text-brand-navy">1. Feature Cards Grid (Understand • Act • Resolve)</h3>
+            <p class="text-xs text-brand-slate">Extracted 3-pillar card container with icons, rounded badge styling and micro-copy.</p>
+          </div>
+          <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">Tailwind v3</span>
+        </div>
+
+        <!-- Rendered Component Demo -->
+        <div class="p-6 bg-[#FDF9F1] rounded-2xl border border-[#EFE7DA] mb-6">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            
+            <!-- Understand Card -->
+            <div class="bg-white rounded-2xl p-5 border border-[#F3ECE1] shadow-sm flex flex-col items-center text-center">
+              <div class="w-12 h-12 rounded-2xl bg-[#FFF4ED] text-brand-orange flex items-center justify-center mb-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+              </div>
+              <h4 class="font-extrabold text-brand-navy text-sm mb-1">Understand</h4>
+              <p class="text-xs text-brand-slate leading-relaxed">Get clear, easy-to-understand legal information.</p>
+            </div>
+
+            <!-- Act Card -->
+            <div class="bg-white rounded-2xl p-5 border border-[#F3ECE1] shadow-sm flex flex-col items-center text-center">
+              <div class="w-12 h-12 rounded-2xl bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center mb-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              </div>
+              <h4 class="font-extrabold text-brand-navy text-sm mb-1">Act</h4>
+              <p class="text-xs text-brand-slate leading-relaxed">Know the steps, documents and authorities.</p>
+            </div>
+
+            <!-- Resolve Card -->
+            <div class="bg-white rounded-2xl p-5 border border-[#F3ECE1] shadow-sm flex flex-col items-center text-center">
+              <div class="w-12 h-12 rounded-2xl bg-[#ECFDF5] text-[#10B981] flex items-center justify-center mb-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              </div>
+              <h4 class="font-extrabold text-brand-navy text-sm mb-1">Resolve</h4>
+              <p class="text-xs text-brand-slate leading-relaxed">Move from confusion to confidence.</p>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- HTML Snippet Block -->
+        <pre class="bg-[#0B1B36] text-[#E2E8F0] p-4 rounded-xl text-xs overflow-x-auto"><code>&lt;!-- 3-Pillar Card Component (Tailwind CSS) --&gt;
+&lt;div class="grid grid-cols-1 sm:grid-cols-3 gap-4"&gt;
+  &lt;div class="bg-white rounded-2xl p-5 border border-[#F3ECE1] shadow-sm flex flex-col items-center text-center"&gt;
+    &lt;div class="w-12 h-12 rounded-2xl bg-[#FFF4ED] text-[#E85B24] flex items-center justify-center mb-3"&gt;
+      &lt;!-- Book Icon --&gt;
+    &lt;/div&gt;
+    &lt;h4 class="font-extrabold text-[#0B1B36] text-sm mb-1"&gt;Understand&lt;/h4&gt;
+    &lt;p class="text-xs text-[#5C6E88] leading-relaxed"&gt;Get clear, easy-to-understand legal information.&lt;/p&gt;
+  &lt;/div&gt;
+  &lt;!-- (Act and Resolve columns) --&gt;
+&lt;/div&gt;</code></pre>
+      </div>
+
+      <!-- Component 2: The Highlight Banner Card -->
+      <div class="bg-white rounded-3xl p-6 sm:p-10 border border-[#EAE2D5] shadow-card-soft">
+        <div class="flex items-center justify-between pb-6 border-b border-[#F1E8DC] mb-8">
+          <div>
+            <h3 class="text-lg font-bold text-brand-navy">2. Highlight Step Banner</h3>
+            <p class="text-xs text-brand-slate">Extracted horizontal prompt card with call-to-action arrow.</p>
+          </div>
+          <span class="text-xs font-bold text-brand-orange bg-orange-50 px-3 py-1 rounded-full border border-orange-200">Interactive</span>
+        </div>
+
+        <!-- Rendered Component Demo -->
+        <div class="p-6 bg-[#FDF9F1] rounded-2xl border border-[#EFE7DA] mb-6">
+          <div class="bg-white/95 rounded-2xl p-4 sm:p-5 border border-[#EFE7DA] shadow-sm flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3.5">
+              <div class="w-11 h-11 rounded-xl bg-[#FFF4ED] flex items-center justify-center text-xl shrink-0">
+                📄
+              </div>
+              <p class="text-xs sm:text-sm text-brand-navy font-medium leading-relaxed">
+                From understanding your rights to drafting complaints — we're with you at <strong class="text-brand-orange font-bold">every step.</strong>
+              </p>
+            </div>
+            <button class="w-10 h-10 rounded-full bg-[#FFEADA] hover:bg-[#FDD8BD] text-brand-navy flex items-center justify-center shrink-0 transition-colors">
+              <svg class="w-5 h-5 text-brand-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- HTML Snippet Block -->
+        <pre class="bg-[#0B1B36] text-[#E2E8F0] p-4 rounded-xl text-xs overflow-x-auto"><code>&lt;!-- Banner Component (Tailwind CSS) --&gt;
+&lt;div class="bg-white/95 rounded-2xl p-4 sm:p-5 border border-[#EFE7DA] shadow-sm flex items-center justify-between gap-4"&gt;
+  &lt;div class="flex items-center gap-3.5"&gt;
+    &lt;div class="w-11 h-11 rounded-xl bg-[#FFF4ED] flex items-center justify-center text-xl shrink-0"&gt;📄&lt;/div&gt;
+    &lt;p class="text-xs sm:text-sm text-[#0B1B36] font-medium leading-relaxed"&gt;
+      From understanding your rights to drafting complaints — we're with you at &lt;strong class="text-[#E85B24] font-bold"&gt;every step.&lt;/strong&gt;
+    &lt;/p&gt;
+  &lt;/div&gt;
+  &lt;button class="w-10 h-10 rounded-full bg-[#FFEADA] hover:bg-[#FDD8BD] text-[#0B1B36] flex items-center justify-center shrink-0 transition-colors"&gt;
+    &lt;svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/&gt;&lt;/svg&gt;
+  &lt;/button&gt;
+&lt;/div&gt;</code></pre>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- FAQ SECTION                                                               -->
+  <!-- ========================================================================= -->
+  <section class="py-20 bg-white border-t border-[#EAE2D5]" id="faq">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center mb-14">
+        <span class="text-xs font-extrabold uppercase tracking-widest text-brand-orange">Common Questions</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-brand-navy mt-2">Frequently Asked Questions</h2>
+      </div>
+
+      <div class="space-y-4">
+        
+        <details class="group bg-[#FAF6EE] rounded-2xl p-6 border border-[#EAE2D5] [&_summary::-webkit-details-marker]:hidden">
+          <summary class="flex items-center justify-between cursor-pointer font-bold text-brand-navy text-base">
+            <span>Is Kayda Sathi completely free for Indian citizens?</span>
+            <span class="transition group-open:rotate-180 text-brand-orange font-bold text-xl">&darr;</span>
+          </summary>
+          <p class="mt-4 text-sm text-brand-slate leading-relaxed">
+            Yes. Kayda Sathi is built to bridge the justice gap in India. All legal information, checklists, complaint templates, and authority directory tools are 100% free.
+          </p>
+        </details>
+
+        <details class="group bg-[#FAF6EE] rounded-2xl p-6 border border-[#EAE2D5] [&_summary::-webkit-details-marker]:hidden">
+          <summary class="flex items-center justify-between cursor-pointer font-bold text-brand-navy text-base">
+            <span>Can I speak in my own language instead of typing legal English?</span>
+            <span class="transition group-open:rotate-180 text-brand-orange font-bold text-xl">&darr;</span>
+          </summary>
+          <p class="mt-4 text-sm text-brand-slate leading-relaxed">
+            Yes! You can describe your problem in simple words or speak via voice in Hindi, Marathi, Bengali, Tamil, Telugu, Kannada, or English. The app translates your story into statutory legal requirements.
+          </p>
+        </details>
+
+        <details class="group bg-[#FAF6EE] rounded-2xl p-6 border border-[#EAE2D5] [&_summary::-webkit-details-marker]:hidden">
+          <summary class="flex items-center justify-between cursor-pointer font-bold text-brand-navy text-base">
+            <span>Does this replace an advocate or legal representation?</span>
+            <span class="transition group-open:rotate-180 text-brand-orange font-bold text-xl">&darr;</span>
+          </summary>
+          <p class="mt-4 text-sm text-brand-slate leading-relaxed">
+            Kayda Sathi provides clear legal information, procedural steps, and draft documents. For formal courtroom litigation, it connects you to NALSA Legal Aid Services and authorized legal aid clinics near you.
+          </p>
+        </details>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- FOOTER                                                                    -->
+  <!-- ========================================================================= -->
+  <footer class="bg-brand-navy text-white pt-16 pb-12 border-t border-[#1E293B]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-white/10">
+        
+        <div class="md:col-span-2">
+          <div class="flex items-center gap-2.5 mb-4">
+            <span class="text-2xl font-black text-white">Kayda</span>
+            <span class="text-2xl font-black text-brand-orange">Sathi</span>
+          </div>
+          <p class="text-sm text-[#94A3B8] leading-relaxed max-w-sm">
+            Empowering every citizen with simple, structured legal guidance from "I don't know what to do" to "I know my next steps".
+          </p>
+        </div>
+
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-widest text-white/80 mb-4">5 Pillars</h4>
+          <ul class="space-y-2.5 text-xs text-[#94A3B8]">
+            <li>Rights & Remedies</li>
+            <li>Required Documents</li>
+            <li>Suggested Next Steps</li>
+            <li>Appropriate Authority</li>
+            <li>Customizable Drafts</li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-widest text-white/80 mb-4">Emergency Legal Aid</h4>
+          <p class="text-xs text-[#94A3B8] leading-relaxed mb-3">
+            National Legal Services Authority (NALSA) Toll-Free Helpline:
+          </p>
+          <a href="tel:15100" class="inline-flex items-center gap-2 text-sm font-bold text-brand-orange hover:text-white transition-colors">
+            <span>📞 15100 (National Helpline)</span>
+          </a>
+        </div>
+
+      </div>
+
+      <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#64748B]">
+        <p>&copy; 2026 Kayda Sathi. All rights reserved.</p>
+        <p class="text-center sm:text-right">
+          Disclaimer: Kayda Sathi provides legal information and self-help document drafts, not legal advice.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- Interactive Script                                                        -->
+  <!-- ========================================================================= -->
+  <script>
+    function handleOnboardingAction(action) {
+      if (action === 'get-started' || action === 'skip') {
+        window.open('http://localhost:8081/', '_blank');
+      } else if (action === 'banner') {
+        document.getElementById('five-pillars').scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    function fillScenario(type) {
+      document.getElementById('mobile-preview').scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
+
+</body>
+</html>

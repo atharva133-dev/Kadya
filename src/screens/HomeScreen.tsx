@@ -18,6 +18,8 @@ import { GuidanceResultModal } from '../components/GuidanceResultModal';
 import { GeminiRagChatbotModal } from '../components/GeminiRagChatbotModal';
 import { COMMON_LEGAL_ISSUES } from '../data/legalData';
 import { LegalCategory } from '../types';
+import { CategoryScreen } from './CategoryScreen';
+import { CategoryIssue } from '../data/categoryScreenData';
 
 interface HomeScreenProps {
   onNavigateTab: (tab: any) => void;
@@ -37,10 +39,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateTab }) => {
   const [guidanceModalVisible, setGuidanceModalVisible] = useState<boolean>(false);
   const [geminiChatModalVisible, setGeminiChatModalVisible] = useState<boolean>(false);
   const [activeGeminiQuery, setActiveGeminiQuery] = useState<string>('');
+  const [activeCategoryScreen, setActiveCategoryScreen] = useState<string | null>(null);
 
-  // Category selection handler
+  // Category selection handler - Opens dedicated category screen
   const handleSelectCategory = (category: LegalCategory) => {
-    setSelectedCategory(category);
+    setActiveCategoryScreen(category.id);
   };
 
   // Start draft from category
@@ -61,45 +64,64 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateTab }) => {
 
   return (
     <View style={styles.screen}>
-      <Header
-        currentLanguage={currentLanguage}
-        onOpenLanguage={() => setLanguageModalVisible(true)}
-        onOpenProfile={() => onNavigateTab('profile')}
-      />
-
-      <ScrollView
-        style={styles.scrollContainer}
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Main Headline & Description */}
-        <HeroSection />
-
-        {/* Problem Input Box Card & Gemini RAG Trigger */}
-        <ProblemInputCard
-          value={problemText}
-          onChangeText={setProblemText}
-          onOpenVoice={() => setVoiceModalVisible(true)}
-          onSubmitProblem={() => setGuidanceModalVisible(true)}
-          onOpenGeminiChat={handleLaunchGeminiChat}
-        />
-
-        {/* Common Legal Issues Grid */}
-        <CommonLegalIssues
-          categories={COMMON_LEGAL_ISSUES}
-          onSelectCategory={handleSelectCategory}
-          onSeeAll={() => onNavigateTab('guides')}
-        />
-
-        {/* Complaint Draft & Legal Aid Action Cards */}
-        <ActionCards
-          onOpenDrafts={() => {
-            setInitialDraftTemplateId('draft-rental-deposit');
-            setDraftModalVisible(true);
+      {activeCategoryScreen ? (
+        <CategoryScreen
+          categoryId={activeCategoryScreen}
+          onBack={() => setActiveCategoryScreen(null)}
+          onOpenVoiceAssistant={(query) => {
+            if (query) setProblemText(query);
+            setVoiceModalVisible(true);
           }}
-          onOpenLegalAid={() => setLegalAidModalVisible(true)}
+          onOpenTypeAssistant={(query) => {
+            handleLaunchGeminiChat(query || '');
+          }}
+          onSelectIssue={(issue: CategoryIssue) => {
+            handleLaunchGeminiChat(issue.sampleQuery);
+          }}
         />
-      </ScrollView>
+      ) : (
+        <>
+          <Header
+            currentLanguage={currentLanguage}
+            onOpenLanguage={() => setLanguageModalVisible(true)}
+            onOpenProfile={() => onNavigateTab('profile')}
+          />
+
+          <ScrollView
+            style={styles.scrollContainer}
+            contentContainerStyle={styles.contentContainer}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Main Headline & Description */}
+            <HeroSection />
+
+            {/* Problem Input Box Card */}
+            <ProblemInputCard
+              value={problemText}
+              onChangeText={setProblemText}
+              onOpenVoice={() => setVoiceModalVisible(true)}
+              onSubmitProblem={() => setGuidanceModalVisible(true)}
+              onOpenGeminiChat={handleLaunchGeminiChat}
+            />
+
+            {/* Common Legal Issues Grid */}
+            <CommonLegalIssues
+              categories={COMMON_LEGAL_ISSUES}
+              onSelectCategory={handleSelectCategory}
+              onSeeAll={() => onNavigateTab('guides')}
+            />
+
+            {/* Complaint Draft & Legal Aid Action Cards */}
+            <ActionCards
+              onOpenDrafts={() => {
+                setInitialDraftTemplateId('draft-rental-deposit');
+                setDraftModalVisible(true);
+              }}
+              onOpenLegalAid={() => setLegalAidModalVisible(true)}
+            />
+          </ScrollView>
+        </>
+      )}
 
       {/* Gemini RAG Chatbot Modal */}
       <GeminiRagChatbotModal
@@ -110,13 +132,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateTab }) => {
         onOpenHelpline={() => setLegalAidModalVisible(true)}
       />
 
-      {/* Voice Assistant Simulation Modal */}
+      {/* Gemini Voice Assistant Modal */}
       <VoiceModal
         visible={voiceModalVisible}
         onClose={() => setVoiceModalVisible(false)}
         onUseTranscription={(transcript) => {
           setProblemText(transcript);
         }}
+        onLaunchGeminiChat={handleLaunchGeminiChat}
+        initialLanguage={currentLanguage}
       />
 
       {/* Category Detail Modal (5 Pillars) */}
